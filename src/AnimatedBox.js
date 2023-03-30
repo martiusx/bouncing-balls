@@ -26,7 +26,7 @@ function MyAnimatedBox({ wallRefs, ballRefs }) {
       maxY: Math.max(...wallsY),
     };
 
-    balls.forEach((ball) => {
+    balls.forEach((ball, index) => {
       const ballActualPosition = ball.current.position;
       const { direction, speedx, speedy } = ball;
 
@@ -36,6 +36,25 @@ function MyAnimatedBox({ wallRefs, ballRefs }) {
         direction === "topRight" || direction === "bottomRight"
           ? speedx
           : -speedx;
+
+      balls.forEach((otherBall, otherIndex) => {
+        if (index === otherIndex) {
+          return;
+        }
+
+        const dx = ballActualPosition.x - otherBall.current.position.x;
+        const dy = ballActualPosition.y - otherBall.current.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const minDistance =
+          ball.current.geometry.parameters.radius +
+          otherBall.current.geometry.parameters.radius;
+
+        if (distance < minDistance) {
+          const tempDirection = ball.direction;
+          ball.direction = otherBall.direction;
+          otherBall.direction = tempDirection;
+        }
+      });
 
       if (ballActualPosition.x <= bounds.minX) {
         ball.direction =
@@ -51,6 +70,7 @@ function MyAnimatedBox({ wallRefs, ballRefs }) {
       }
     });
   });
+
   return null;
 }
 
