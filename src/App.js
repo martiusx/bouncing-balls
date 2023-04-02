@@ -1,8 +1,8 @@
 import React from "react";
-import "./App.css";
 import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import MyAnimatedBox from "./AnimatedBox";
+import "./App.css";
 
 function App() {
   const wallRefs = [useRef(), useRef(), useRef(), useRef()];

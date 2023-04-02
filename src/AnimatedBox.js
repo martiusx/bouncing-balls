@@ -1,23 +1,29 @@
 import { useFrame } from "@react-three/fiber";
+import Collision from "./Collision";
 
-function MyAnimatedBox({ wallRefs, ballRefs }) {
-  const directions = ["bottomLeft", "bottomRight"];
-
+export default function MyAnimatedBox({ wallRefs, ballRefs }) {
+  const startDirections = ["bottomLeft", "bottomRight"];
+  let startCollisions = false;
   const balls = ballRefs.map((ball) => {
-    ball.direction = directions[Math.floor(Math.random() * directions.length)];
-    ball.speedx = Math.random() * (0.05 - 0.01) + 0.01;
-    ball.speedy = Math.random() * (0.05 - 0.01) + 0.01;
+    ball.direction =
+      startDirections[Math.floor(Math.random() * startDirections.length)];
+    ball.speedX = Math.random() * (0.04 - 0.01) + 0.01;
+    ball.speedY = Math.random() * (0.04 - 0.01) + 0.01;
     return ball;
   });
 
+  setTimeout(() => {
+    startCollisions = true;
+  }, 3000);
+
   useFrame(() => {
     const wallsX = [
-      wallRefs[1].current.position.x,
-      wallRefs[3].current.position.x,
+      wallRefs[1].current.position.x - 0.1,
+      wallRefs[3].current.position.x + 0.1,
     ];
     const wallsY = [
-      wallRefs[0].current.position.y,
-      wallRefs[2].current.position.y,
+      wallRefs[0].current.position.y - 0.1,
+      wallRefs[2].current.position.y + 0.1,
     ];
     const bounds = {
       minX: Math.min(...wallsX),
@@ -28,33 +34,18 @@ function MyAnimatedBox({ wallRefs, ballRefs }) {
 
     balls.forEach((ball, index) => {
       const ballActualPosition = ball.current.position;
-      const { direction, speedx, speedy } = ball;
+      const { direction, speedX, speedY } = ball;
 
       ballActualPosition.y +=
-        direction === "topLeft" || direction === "topRight" ? speedy : -speedy;
+        direction === "topLeft" || direction === "topRight" ? speedY : -speedY;
       ballActualPosition.x +=
         direction === "topRight" || direction === "bottomRight"
-          ? speedx
-          : -speedx;
+          ? speedX
+          : -speedX;
 
-      balls.forEach((otherBall, otherIndex) => {
-        if (index === otherIndex) {
-          return;
-        }
-
-        const dx = ballActualPosition.x - otherBall.current.position.x;
-        const dy = ballActualPosition.y - otherBall.current.position.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const minDistance =
-          ball.current.geometry.parameters.radius +
-          otherBall.current.geometry.parameters.radius;
-
-        if (distance < minDistance) {
-          const tempDirection = ball.direction;
-          ball.direction = otherBall.direction;
-          otherBall.direction = tempDirection;
-        }
-      });
+      if (startCollisions) {
+        Collision(balls, ball, index, ballActualPosition);
+      }
 
       if (ballActualPosition.x <= bounds.minX) {
         ball.direction =
@@ -73,5 +64,3 @@ function MyAnimatedBox({ wallRefs, ballRefs }) {
 
   return null;
 }
-
-export default MyAnimatedBox;
